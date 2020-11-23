@@ -16,6 +16,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using AutoLotModel;
 
+
 namespace ZalhanPaula_Lab7
 {
     /// <summary>
@@ -37,6 +38,7 @@ namespace ZalhanPaula_Lab7
         Binding lastNameTextBoxBinding = new Binding();
         Binding makeTextBoxBinding = new Binding();
         Binding colorTextBoxBinding = new Binding();
+
         public MainWindow()
         {
             InitializeComponent();
@@ -83,15 +85,15 @@ namespace ZalhanPaula_Lab7
             customerOrdersViewSource = ((System.Windows.Data.CollectionViewSource)(this.FindResource("customerOrdersViewSource")));
             //customerOrdersViewSource.Source = ctx.Orders.Local;
             BindDataGrid();
-            ctx.Orders.Load();
-
+            
             cmbCustomers.ItemsSource = ctx.Customers.Local;
             //cmbCustomers.DisplayMemberPath = "FirstName";
             cmbCustomers.SelectedValuePath = "CustId";
 
             cmbInventory.ItemsSource = ctx.Inventories.Local;
             //cmbInventory.DisplayMemberPath = "Make";
-            cmbInventory.SelectedValuePath = "CarId";        
+            cmbInventory.SelectedValuePath = "CarId";
+            ctx.Orders.Load();
         }
 
         //Customers TabItem
@@ -111,9 +113,7 @@ namespace ZalhanPaula_Lab7
 
             BindingOperations.ClearBinding(firstNameTextBox, TextBox.TextProperty);
             BindingOperations.ClearBinding(lastNameTextBox, TextBox.TextProperty);
-
             SetValidationBinding();
-            
             firstNameTextBox.Text = "";
             lastNameTextBox.Text = "";
             Keyboard.Focus(firstNameTextBox);
@@ -136,12 +136,10 @@ namespace ZalhanPaula_Lab7
 
             BindingOperations.ClearBinding(firstNameTextBox, TextBox.TextProperty);
             BindingOperations.ClearBinding(lastNameTextBox, TextBox.TextProperty);
-
             SetValidationBinding();
-            
             firstNameTextBox.Text = tempFirstName;
             lastNameTextBox.Text = tempLastName;
-            Keyboard.Focus(firstNameTextBox);
+            Keyboard.Focus(firstNameTextBox);            
         }
         private void btnDelete_Click(object sender, RoutedEventArgs e)
         {
@@ -165,6 +163,7 @@ namespace ZalhanPaula_Lab7
         
         private void btnSave_Click(object sender, RoutedEventArgs e)
         {
+            SetDbBinding();
             Customer customer = null;
             if(action == ActionState.New)
             {
@@ -256,8 +255,8 @@ namespace ZalhanPaula_Lab7
                 lastNameTextBox.IsEnabled = false;
 
                 //**
-               // firstNameTextBox.SetBinding(TextBox.TextProperty, firstNameTextBoxBinding);
-                //lastNameTextBox.SetBinding(TextBox.TextProperty, lastNameTextBoxBinding);
+               firstNameTextBox.SetBinding(TextBox.TextProperty, firstNameTextBoxBinding);
+               lastNameTextBox.SetBinding(TextBox.TextProperty, lastNameTextBoxBinding);
             }
         }
         private void btnCancel_Click(object sender, RoutedEventArgs e)
@@ -276,6 +275,8 @@ namespace ZalhanPaula_Lab7
 
             firstNameTextBox.SetBinding(TextBox.TextProperty, firstNameTextBoxBinding);
             lastNameTextBox.SetBinding(TextBox.TextProperty, lastNameTextBoxBinding);
+
+            SetDbBinding();
         }
         private void btnNext_Click(object sender, RoutedEventArgs e)
         {
@@ -308,8 +309,23 @@ namespace ZalhanPaula_Lab7
             lastNameTextBox.SetBinding(TextBox.TextProperty, lastNameValidationBinding); //setare binding nou
         }
 
-            //Inventory TabItem
-            private void btnNew1_Click(object sender, RoutedEventArgs e)
+        private void SetDbBinding()
+        { //seteaza binding-ul inapoi cu baza de date
+          //!!salvam starea celor doua casute de text inainte de refacerea Binding-ului
+            string temp_fname = firstNameTextBox.Text;
+            string temp_lname = lastNameTextBox.Text;
+            int selected_item = customerDataGrid.SelectedIndex;
+            //refacem binding-ul cu BD
+            firstNameTextBox.SetBinding(TextBox.TextProperty, firstNameTextBoxBinding);
+            lastNameTextBox.SetBinding(TextBox.TextProperty, lastNameTextBoxBinding);
+            //!!!refacem starea formularului
+            firstNameTextBox.Text = temp_fname;
+            lastNameTextBox.Text = temp_lname;
+            customerDataGrid.SelectedIndex = selected_item;
+        }
+
+        //Inventory TabItem
+        private void btnNew1_Click(object sender, RoutedEventArgs e)
         {
             action = ActionState.New;
             btnNew.IsEnabled = false;
@@ -495,6 +511,8 @@ namespace ZalhanPaula_Lab7
             inventoryViewSource.View.MoveCurrentToNext();
         }
 
+
+        //Orders TabItem
         private void btnSave2_Click(object sender, RoutedEventArgs e)
         {
             Order order = null;
@@ -513,7 +531,7 @@ namespace ZalhanPaula_Lab7
                     ctx.Orders.Add(order);
                     customerOrdersViewSource.View.Refresh();
                     ctx.SaveChanges();
-
+                    BindDataGrid();
                 }
                 catch (DataException ex)
                 {
@@ -594,32 +612,79 @@ namespace ZalhanPaula_Lab7
         //Customers TabItem
         private void btnNew2_Click(object sender, RoutedEventArgs e)
         {
-
+            action = ActionState.New;
+            btnNew2.IsEnabled = false;
+            btnEdit2.IsEnabled = false;
+            btnDelete2.IsEnabled = false;
+            btnSave2.IsEnabled = true;
+            btnCancel2.IsEnabled = true;
+            ordersDataGrid.IsEnabled = false;
+            btnPrev2.IsEnabled = false;
+            btnNext2.IsEnabled = false;
+            cmbCustomers.IsEnabled = true;
+            cmbInventory.IsEnabled = true;
         }
 
         private void btnEdit2_Click(object sender, RoutedEventArgs e)
         {
+            action = ActionState.Edit;
+            btnNew2.IsEnabled = false;
+            btnEdit2.IsEnabled = false;
+            btnDelete2.IsEnabled = false;
+            btnSave2.IsEnabled = true;
+            btnCancel2.IsEnabled = true;
+            ordersDataGrid.IsEnabled = false;
+            btnPrev2.IsEnabled = false;
+            btnNext2.IsEnabled = false;
+            cmbCustomers.IsEnabled = true;
+            cmbInventory.IsEnabled = true;
 
         }
 
         private void btnDelete2_Click(object sender, RoutedEventArgs e)
         {
-
+            action = ActionState.Delete;
+            btnNew2.IsEnabled = false;
+            btnEdit2.IsEnabled = false;
+            btnDelete2.IsEnabled = false;
+            btnSave2.IsEnabled = true;
+            btnCancel2.IsEnabled = true;
+            ordersDataGrid.IsEnabled = false;
+            btnPrev2.IsEnabled = false;
+            btnNext2.IsEnabled = false;
         }
 
         private void btnCancel2_Click(object sender, RoutedEventArgs e)
         {
-
+            action = ActionState.Nothing;
+            btnNew2.IsEnabled = true;
+            btnEdit2.IsEnabled = true;
+            btnDelete2.IsEnabled = true;
+            btnSave2.IsEnabled = false;
+            btnCancel2.IsEnabled = false;
+            ordersDataGrid.IsEnabled = false;
+            btnPrev.IsEnabled = true;
+            btnNext.IsEnabled = true;
         }
 
         private void btnPrev2_Click(object sender, RoutedEventArgs e)
         {
-
+            customerOrdersViewSource.View.MoveCurrentToPrevious();
         }
 
         private void btnNext2_Click(object sender, RoutedEventArgs e)
         {
+            customerOrdersViewSource.View.MoveCurrentToNext();
+        }
 
+        private void btnExit_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show("Do you want to close this window?", "Confirmation", MessageBoxButton.YesNo);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                this.Close();
+            }
         }
     }
 }
